@@ -1,0 +1,411 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>搭建开发环境 · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.2">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="学习Angular.html" />
+    
+    
+    <link rel="prev" href="概览.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    简介
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../快速开始.html">
+            
+                <a href="../快速开始.html">
+            
+                    
+                    快速开始
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    指南
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="概览.html">
+            
+                <a href="概览.html">
+            
+                    
+                    概览
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.3.2" data-path="搭建开发环境.html">
+            
+                <a href="搭建开发环境.html">
+            
+                    
+                    搭建开发环境
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3" data-path="学习Angular.html">
+            
+                <a href="学习Angular.html">
+            
+                    
+                    学习Angular
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4" data-path="架构.html">
+            
+                <a href="架构.html">
+            
+                    
+                    架构
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.5" data-path="显示数据.html">
+            
+                <a href="显示数据.html">
+            
+                    
+                    显示数据
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.6" data-path="用户输入.html">
+            
+                <a href="用户输入.html">
+            
+                    
+                    用户输入
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >搭建开发环境</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h2 id="&#x642D;&#x5EFA;&#x5F00;&#x53D1;&#x73AF;&#x5883;">&#x642D;&#x5EFA;&#x5F00;&#x53D1;&#x73AF;&#x5883;</h2>
+<p>&#x4F7F;&#x7528;&#x65E5;&#x5E38; Dart &#x5DE5;&#x5177;&#xFF0C;&#x7B80;&#x5355;&#x5FEB;&#x901F;&#x7684;&#x642D;&#x5EFA;&#x4E00;&#x4E2A;&#x65B0;&#x7684; Angular &#x9879;&#x76EE;&#x3002;</p>
+<h3 id="&#x9884;&#x5907;&#x6761;&#x4EF6;&#xFF1A;dart-sdk-&#x548C;-dartium">&#x9884;&#x5907;&#x6761;&#x4EF6;&#xFF1A;Dart SDK &#x548C; Dartium</h3>
+<p>&#x5982;&#x679C;&#x8FD8;&#x6CA1;&#x6709; <strong>Dart SDK</strong> &#x548C; <strong>Dartium</strong>&#xFF0C;&#x83B7;&#x53D6;&#x5B83;&#x4EEC;&#x3002;&#x63A8;&#x8350;&#x4F7F;&#x7528; WebStorm IDE&#x3002;</p>
+<h3 id="&#x4F7F;&#x7528;-webstorm-&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x9879;&#x76EE;">&#x4F7F;&#x7528; WebStorm &#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x9879;&#x76EE;</h3>
+<p>&#x4E00;&#x65E6;&#x5B8C;&#x6210;&#x4E86;&#x4E00;&#x4E9B;&#x4E00;&#x6B21;&#x6027;&#x7684;&#x914D;&#x7F6E;&#xFF0C;&#x4F7F;&#x7528; WebStorm &#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x5E94;&#x7528;&#x5F88;&#x7B80;&#x5355;&#x3002;</p>
+<ol>
+<li>&#x542F;&#x52A8; Webstorm&#x3002;</li>
+<li>&#x5982;&#x679C;&#x8FD8;&#x6CA1;&#x6709;&#x8FD9;&#x6837;&#x505A;&#xFF0C;&#x5728; WebStorm &#x914D;&#x7F6E; dart &#x652F;&#x6301;&#x3002;</li>
+<li>&#x5728;&#x6B22;&#x8FCE;&#x754C;&#x9762;&#x5B66;&#x5219;<strong>Create New Project</strong>&#xFF0C;&#x6216;&#x901A;&#x8FC7;&#x83DC;&#x5355;&#x680F;<strong>File &gt; New &gt; Project...</strong>&#xFF0C;&#x5C31;&#x4F1A;&#x6709;&#x4E00;&#x4E2A;&#x5BF9;&#x8BDD;&#x6846;&#x663E;&#x793A;&#x51FA;&#x6765;</li>
+<li>&#x5728;&#x5DE6;&#x8FB9;&#x7684;&#x5217;&#x8868;&#x4E2D;&#x9009;&#x62E9;<strong> Dart </strong>&#x3002;</li>
+<li>&#x8BBE;&#x7F6E; <strong>Location</strong> &#x548C; <strong>template</strong>&#xFF1A;</li>
+<li>&#x70B9;&#x51FB; <strong>Create</strong></li>
+</ol>
+<p><a href="https://webdev.dartlang.org/angular/guide/images/create-ng2-project.png" title="&#x65B0;&#x5EFA;&#x9879;&#x76EE;&#x9762;&#x677F;" target="_blank"><img src="https://webdev.dartlang.org/angular/guide/images/create-ng2-project.png" alt="&#x65B0;&#x5EFA;&#x9879;&#x76EE;&#x9762;&#x677F;" title="&#x65B0;&#x5EFA;&#x9879;&#x76EE;&#x9762;&#x677F;"></a></p>
+<h3 id="&#x4ECE;&#x547D;&#x4EE4;&#x884C;&#x4F7F;&#x7528;&#x6A21;&#x677F;">&#x4ECE;&#x547D;&#x4EE4;&#x884C;&#x4F7F;&#x7528;&#x6A21;&#x677F;</h3>
+<p><strong>Stagehand</strong> &#x53EF;&#x4EE5;&#x4F7F;&#x7528;&#x547D;&#x4EE4;&#x884C;&#x521B;&#x5EFA;&#x548C; WebStorm &#x76F8;&#x540C;&#x7684;&#x6A21;&#x677F;&#x3002;&#x5047;&#x8BBE; <strong>Dart SDK</strong> &#x548C; <strong>pub cache bin</strong> &#x76EE;&#x5F55;&#x5DF2;&#x7ECF;&#x6DFB;&#x52A0;&#x5230;path&#x3002;&#x4E0B;&#x9762;&#x662F;&#x600E;&#x6837;&#x4F7F;&#x7528; <strong>stagehand</strong> &#x521B;&#x5EFA; Angular &#x9879;&#x76EE;&#xFF1A;</p>
+<ol>
+<li><code>pub global activate stagehand</code> &#x5B89;&#x88C5;&#x6216;&#x66F4;&#x65B0; stagehand&#x3002;</li>
+<li><code>mkdir [&#x76EE;&#x5F55;&#x540D;] &amp;&amp; cd [&#x76EE;&#x5F55;&#x540D;]</code> &#x521B;&#x5EFA;&#x5E76;&#x8FDB;&#x5165;&#x9879;&#x76EE;&#x76EE;&#x5F55;</li>
+<li><code>stagehand [&#x6A21;&#x677F;&#x540D;&#x79F0;]</code> &#x9009;&#x62E9;Stagehand&#x6A21;&#x677F;&#x521B;&#x5EFA;&#x5E94;&#x7528;&#x9AA8;&#x67B6;</li>
+<li><code>pub get</code> &#x83B7;&#x53D6;&#x4F9D;&#x8D56;</li>
+<li><code>pub serve</code> &#x8FD0;&#x884C;&#x5E94;&#x7528;</li>
+</ol>
+<h3 id="&#x76EE;&#x5F55;&#x7ED3;&#x6784;">&#x76EE;&#x5F55;&#x7ED3;&#x6784;</h3>
+<pre><code>angular_quickstart/
+|__lib/
+|  |__app_component.dart
+|__web/
+|  |__main.dart
+|  |__index.html
+|  |__styles.css
+|__pubspec.yaml
+</code></pre><p>&#x6240;&#x6709;&#x6307;&#x5357;&#x548C;&#x98DF;&#x8C31;&#x90FD;&#x81F3;&#x5C11;&#x6709;&#x8FD9;&#x51E0;&#x4E2A;&#x6838;&#x5FC3;&#x6587;&#x4EF6;&#x3002;&#x6BCF;&#x4E2A;&#x6587;&#x4EF6;&#x90FD;&#x6709;&#x72EC;&#x7279;&#x7684;&#x7528;&#x9014;&#xFF0C;&#x5E76;&#x4E14;&#x968F;&#x7740;&#x5E94;&#x7528;&#x7684;&#x6210;&#x957F;&#x5404;&#x81EA;&#x72EC;&#x7ACB;&#x6F14;&#x53D8;&#x3002;</p>
+<table>
+<thead>
+<tr>
+<th>&#x6587;&#x4EF6;</th>
+<th>&#x7528;&#x9014;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lib/app_component.dart</td>
+<td>&#x5B9A;&#x4E49;&lt;my-app&gt;&#xFF0C;&#x5B83;&#x662F;&#x6839;&#x7EC4;&#x4EF6;&#xFF0C;&#x968F;&#x7740;&#x5E94;&#x7528;&#x7684;&#x8FDB;&#x5316;&#xFF0C;&#x5B83;&#x5C06;&#x53D8;&#x6210;&#x4E00;&#x9897;&#x5D4C;&#x5957;&#x7EC4;&#x4EF6;&#x6811;</td>
+</tr>
+<tr>
+<td>web/main.dart</td>
+<td>&#x542F;&#x52A8;&#x5E94;&#x7528;&#x5728;&#x6D4F;&#x89C8;&#x5668;&#x4E2D;&#x8FD0;&#x884C;</td>
+</tr>
+<tr>
+<td>web/index.html</td>
+<td>&#x5728;&lt;body&gt;&#x4E2D;&#x5305;&#x542B;&#x4E86;&lt;my-app&gt;&#x6807;&#x7B7E;,&#x8FD9;&#x662F;&#x5E94;&#x7528;&#x5B58;&#x5728;&#x7684;&#x5730;&#x65B9;</td>
+</tr>
+<tr>
+<td>web/styles.css</td>
+<td>&#x5E94;&#x7528;&#x4E8E;&#x6574;&#x4E2A;&#x5E94;&#x7528;&#x7684;&#x6837;&#x5F0F;</td>
+</tr>
+<tr>
+<td>pubspec.yaml</td>
+<td>&#x8FD9;&#x4E2A;&#x6587;&#x4EF6;&#x5305;&#x542B;&#x4E86;&#x5E94;&#x7528;&#x7684;&#x63CF;&#x8FF0;&#x548C;&#x5B83;&#x7684;&#x4F9D;&#x8D56;&#x3002;</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>&#x4E0B;&#x4E00;&#x6B65;</p>
+<p> <a href="&#x5B66;&#x4E60;Angular.html">&#x5B66;&#x4E60;Angular</a></p>
+</blockquote>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="概览.html" class="navigation navigation-prev " aria-label="Previous page: 概览">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="学习Angular.html" class="navigation navigation-next " aria-label="Next page: 学习Angular">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"搭建开发环境","level":"1.3.2","depth":2,"next":{"title":"学习Angular","level":"1.3.3","depth":2,"path":"指南/学习Angular.md","ref":"指南/学习Angular.md","articles":[]},"previous":{"title":"概览","level":"1.3.1","depth":2,"path":"指南/概览.md","ref":"指南/概览.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"指南/搭建开发环境.md","mtime":"2016-12-10T12:26:45.626Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2016-12-11T07:16:51.137Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
