@@ -1,7 +1,7 @@
 # Summary
 
 * [简介](README.md)
-* [快速开始](快速开始.md)
+* [使用 angular_cli 开发 AngularDart 应用](使用 angular_cli 开发 AngularDart 应用.md)
 * 指南
     * [概览](指南/概览.md)
     * [搭建开发环境](指南/搭建开发环境.md)
