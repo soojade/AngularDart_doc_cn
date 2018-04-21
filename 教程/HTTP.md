@@ -1,117 +1,129 @@
-## HTTP
+> 版本：4.0.0+2
 
-客户对我们的进展很满意！现在，它们想要从服务器获取英雄数据，然后让用户添加、编辑和删除英雄，并且把这些修改结果保存回服务器。
+在本章，你会做以下改进。
 
-在这一章中，我们要让应用程序通过 HTTP 调用来访问远程服务器上相应的 Web API。
+* 从一个服务器获取英雄数据。
+* 让用户添加、编辑和删除英雄。
+* 保存改变到服务器。
 
-运行这部分的[在线例子](http://angular-examples.github.io/toh-6)。
+你会教给应用发起到一个远程服务器的 web API 的相应的 HTTP 请求。
 
-### 我们离开的地方
+当你按照本章做完这一切，应用看起来应该这样——[在线示例](https://webdev.dartlang.org/examples/toh-6/) ([查看源码](https://github.com/angular-examples/toh-6/tree/4.x))。
 
-在前一章中，我们学会了在仪表盘和固定的英雄列表之间导航，并编辑选定的英雄。这也就是本章的起点。
+### 你离开的地方
 
-#### 保持应用的编译和运行
+在[前一章](./路由.md)中，你学会了在仪表盘和固定的英雄列表之间导航，并编辑选定的英雄。这也就是本章的起点。
 
-打开终端/控制台窗口，通过输入如下命令，启动 Dart 编译器，它会监视文件变化，并启动开发服务器：
+在继续英雄指南之前，验证你是否有如下结构。
 
 ```
-pub serve
+angular_tour_of_heroes/
+|___lib/
+|   |___app_component.{css,dart}
+|___src/
+|   |   |___dashboard_component.{css,dart,html}
+|   |   |___hero.dart
+|   |   |___hero_detail_component.{css,dart,html}
+|   |   |___hero_service.dart
+|   |   |___heroes_component.{css,dart,html}
+|   |   |___mock_heroes.dart
+|___test/
+|   |___app_test.dart
+|   |___...
+|___web/
+|   |___index.html
+|   |___main.dart
+|   |___styles.css
+|___pubspec.yaml
 ```
 
-在我们继续构建《英雄之旅》的时候，应用保持运行并自动更新。
+如果应用还没有运行，使用`pub serve`启动应用。当你做出改变时，通过刷新浏览器窗口，使其保持运行。
 
-## 提供HTTP服务
+### 提供 HTTP 服务
 
-我们将使用 Dart 中的 **http** 包的 `BrowserClient` 类来与服务器通信。
+你将使用 Dart的 [http](https://pub.dartlang.org/packages/http) 包的客户端类来与服务器通信。
 
 #### 更新 Pubspec
 
-通过添加`stream_transformers`和 Dart 的 http 包来更新包依赖。
-
-我们还需要添加 `resolved_identifiers` 项，以便通知 Angular2 转换器 我们将使用 `BrowserClient`。我们还需要从 http 中使用 `Client`，所以现在让我们一块添加上。
-
-更新 `pubspec.yaml` ，内容如下：
+通过添加Dart  [http](https://pub.dartlang.org/packages/http) 和 [stream_transform](https://pub.dartlang.org/packages/stream_transform) 包来更新包依赖。
 
 ```
-name: angular_tour_of_heroes
-# . . . 
-dependencies:
-  angular2: ^2.2.0
-  http: ^0.11.0
-  stream_transformers: ^0.3.0
-  # . . . 
-transformers:
-- angular2:
-# . . . 
-    entry_points: web/main.dart
-    resolved_identifiers:
-        BrowserClient: 'package:http/browser_client.dart'
-        Client: 'package:http/http.dart'
-- dart_to_js_script_rewriter
+// {toh-5 → toh-6}/pubspec.yaml
+
+dependencies:            
+    angular: ^4.0.0            
+    angular_forms: ^1.0.0            
+    angular_router: ^1.0.2            
++   http: ^0.11.0            
++   stream_transform: ^0.0.6
 ```
 
-#### 注册 HTTP 服务
+### 注册 HTTP 服务
 
-在我们的应用开始使用 `BrowserClient` 之前，我们必须将它注册为一个服务提供者。
+在应用可以使用`BrowserClient`之前，你必须把它当一个服务提供器注册。
 
-在应用中，我们应该能够在任何地方访问 `BrowserClient` 服务。因此我们将它注册到 `bootstrap` 调用中，那是我们启动应用和根组件 `AppComponent` 的地方。
+你在应用的任何地方都应该能访问`BrowserClient`服务。因此在`bootstrap` 调用中注册它，那是你启动应用和根组件`AppComponent`的地方。
 
 ```
-import 'package:angular2/core.dart';
-import 'package:angular2/platform/browser.dart';
+// web/main.dart (v1)
+
+import 'package:angular/angular.dart';
+import 'package:angular_router/angular_router.dart';
 import 'package:angular_tour_of_heroes/app_component.dart';
 import 'package:http/browser_client.dart';
-
 void main() {
   bootstrap(AppComponent, [
+    ROUTER_PROVIDERS,
+    // Remove next line in production
+    provide(LocationStrategy, useClass: HashLocationStrategy),
     provide(BrowserClient, useFactory: () => new BrowserClient(), deps: [])
   ]);
 }
 ```
 
-注意，我们在列表中添加了 `BrowserClient` ，作为 `bootstrap` 方法的第二个参数。这与`@Component`注解中的 `providers` 列表效果一样。
+注意，你在`bootstrap`方法的第二个参数列表中提供`BrowserClient`。这和在`@Component`注解中的`providers`列表中有同样的效果。
+
+> **注意：**除非你有一个适当配置的后端服务器（或一个模拟服务器），否则，这个应用并不工作。接下来的部分展示如何与一个后端服务器模拟交互。
 
 #### 模拟 Web API
 
-我们建议在根组件 `AppComponent` 的 `providers` 中注册全应用级的服务。这里在 `main` 中进行注册有一个特殊的原因。
+在你有一个处理英雄数据请求的 Web 服务器之前，HTTP 客户端会从一个模拟服务器——*内存 web API* 获取并保存数据。
 
-我们的应用处在开发的早期阶段，并且离进入产品阶段还很远。我们甚至都还没有一个用来处理英雄相关请求的 Web 服务器，在此之前，我们将不得不伪造一个 。
-
-我们将欺骗 Http 客户端，让它从一个 Mock 服务（内存 Web API）中获取和保存数据。而应用本身并不需要知道，也不应该知道。所以我们让 内存（in-memory） Web API 悄悄的在 `AppComponent` 之上进行配置。
-
-这个版本的 `web/main.dart` 就是用来实现这个小花招的：
+使用模拟服务器的版本来更新`web/main.dart`：
 
 ```
-import 'package:angular2/core.dart';
-import 'package:angular2/platform/browser.dart';
+// web/main.dart (v2)
+
+import 'package:angular/angular.dart';
+import 'package:angular_router/angular_router.dart';
 import 'package:angular_tour_of_heroes/app_component.dart';
 import 'package:angular_tour_of_heroes/in_memory_data_service.dart';
 import 'package:http/http.dart';
-
 void main() {
-  bootstrap(AppComponent,
-    [provide(Client, useClass: InMemoryDataService)]
-    // Using a real back end? Import browser_client.dart and change the above to
+  bootstrap(AppComponent, [
+    ROUTER_PROVIDERS,
+    // Remove next line in production
+    provide(LocationStrategy, useClass: HashLocationStrategy),
+    provide(Client, useClass: InMemoryDataService),
+    // Using a real back end?
+    // Import browser_client.dart and change the above to:
     // [provide(Client, useFactory: () => new BrowserClient(), deps: [])]
-  );
+  ]);
 }
 ```
 
-我们要替换 `BrowserClient` ，该服务会通过内存 Web API 服务，与远程服务器进行会话。我们的内存 Web API 服务如下所示，是通过 http 库的 `MockClient` 类来实现的。所有的 `http` 客户端实现都共享了一个通用的 `Client` 接口。所以我们在应用中使用了 `Clien`t 类型，以便自由地在各个实现之间进行切换。
+你想要使用内存 Web API 服务代替`BrowserClient`，与远程服务器进行会话。内存 Web API 服务如下所示，是通过`http`库的`MockClient`类来实现的。所有的`http`客户端实现都共享了一个通用的`Client`接口。所以你要在应用中使用`Client` 类型，以便在各个实现之间自由地切换。
 
 ```
-// lib/in_memory_data_service.dart
+// lib/in_memory_data_service.dart (init)
 
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-
-import 'package:angular2/core.dart';
+import 'package:angular/angular.dart';
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
-
-import 'hero.dart';
-
+import 'src/hero.dart';
 @Injectable()
 class InMemoryDataService extends MockClient {
   static final _initialHeroes = [
@@ -121,22 +133,23 @@ class InMemoryDataService extends MockClient {
     {'id': 14, 'name': 'Celeritas'},
     {'id': 15, 'name': 'Magneta'},
     {'id': 16, 'name': 'RubberMan'},
-    {'id': 17, 'name': 'Dynama2'},
+    {'id': 17, 'name': 'Dynama'},
     {'id': 18, 'name': 'Dr IQ'},
     {'id': 19, 'name': 'Magma'},
     {'id': 20, 'name': 'Tornado'}
   ];
-  static final List<Hero> _heroesDb =
-      _initialHeroes.map((json) => new Hero.fromJson(json)).toList();
-  static int _nextId = _heroesDb.map((hero) => hero.id).fold(0, max) + 1;
-
+  static List<Hero> _heroesDb;
+  static int _nextId;
   static Future<Response> _handler(Request request) async {
+    if (_heroesDb == null) resetDb();
     var data;
     switch (request.method) {
       case 'GET':
-        final id = int.parse(request.url.pathSegments.last, onError: (_) => null);
+        final id =
+            int.parse(request.url.pathSegments.last, onError: (_) => null);
         if (id != null) {
-          data = _heroesDb.firstWhere((hero) => hero.id == id); // throws if no match
+          data = _heroesDb
+              .firstWhere((hero) => hero.id == id); // throws if no match
         } else {
           String prefix = request.url.queryParameters['name'] ?? '';
           final regExp = new RegExp(prefix, caseSensitive: false);
@@ -166,99 +179,104 @@ class InMemoryDataService extends MockClient {
     return new Response(JSON.encode({'data': data}), 200,
         headers: {'content-type': 'application/json'});
   }
-
+  static resetDb() {
+    _heroesDb = _initialHeroes.map((json) => new Hero.fromJson(json)).toList();
+    _nextId = _heroesDb.map((hero) => hero.id).fold(0, max) + 1;
+  }
+  static String lookUpName(int id) =>
+      _heroesDb.firstWhere((hero) => hero.id == id, orElse: null)?.name;
   InMemoryDataService() : super(_handler);
 }
 ```
 
-该文件替换了 `mock_heroes.dart` ，它现在可以安全的删除了。
+这个文件代替了`mock_heroes.dart`，它现在可以安全的删除了。
 
-作为通用的 Web API 服务，我们的模拟内存服务将以 JSON 格式进行编解码英雄数据。现在我们给 `Hero` 类增加这些功能： 
+作为通用的 Web API 服务，模拟内存服务将以 JSON 格式进行编码和解码英雄，所以给`Hero`类增加这些功能： 
 
 ```
+// lib/src/hero.dart
+
 class Hero {
   final int id;
   String name;
-
   Hero(this.id, this.name);
-
   factory Hero.fromJson(Map<String, dynamic> hero) =>
-    new Hero(_toInt(hero['id']), hero['name']);
-
+      new Hero(_toInt(hero['id']), hero['name']);
   Map toJson() => {'id': id, 'name': name};
 }
-
 int _toInt(id) => id is int ? id : int.parse(id);
 ```
 
 ### 英雄与 HTTP
 
-来看看我们目前的`HeroService`的实现
+在当前的`HeroService`的实现中，返回一个 Future 类型的模拟英雄。
 
 ```
 Future<List<Hero>> getHeroes() async => mockHeroes;
 ```
 
-我们返回了一个 Future ，它用来解析模拟英雄数据。在当时，它当时可能看起来显得有点过于复杂。不过我们预料到总有这么一天会通过 HTTP 客户端来获取英雄数据， 而且我们知道，那一定是一个异步操作。
+这是最终使用 HTTP 客户端来获取英雄的预期实现，那一定是一个异步操作。
 
-这一天来了！我们将 `getHeroes()` 转换为使用 HTTP 。
+现在将`getHeroes()`转换为使用 HTTP 的形式 。
 
 ```
+// lib/src/hero_service.dart (updated getHeroes and new class members)
+
   static const _heroesUrl = 'api/heroes'; // URL to web API
 
-  final Client _http;
+final Client _http;
 
-  HeroService(this._http);
+HeroService(this._http);
 
-  Future<List<Hero>> getHeroes() async {
-    try {
-      final response = await _http.get(_heroesUrl);
-      final heroes = _extractData(response)
-          .map((value) => new Hero.fromJson(value))
-          .toList();
-      return heroes;
-    } catch (e) {
-      throw _handleError(e);
-    }
+Future<List<Hero>> getHeroes() async {
+  try {
+    final response = await _http.get(_heroesUrl);
+    final heroes = _extractData(response)
+        .map((value) => new Hero.fromJson(value))
+        .toList();
+    return heroes;
+  } catch (e) {
+    throw _handleError(e);
   }
+}
 
-  dynamic _extractData(Response resp) => JSON.decode(resp.body)['data'];
+dynamic _extractData(Response resp) => JSON.decode(resp.body)['data'];
 
-  Exception _handleError(dynamic e) {
-    print(e); // for demo purposes only
-    return new Exception('Server error; cause: $e');
-  }
+Exception _handleError(dynamic e) {
+  print(e); // for demo purposes only
+  return new Exception('Server error; cause: $e');
+}
 ```
 
-更新后的导入语句如下：
+更新导入语句如下：
 
 ```
+// lib/src/hero_service.dart (updated imports)
+
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:angular2/core.dart';
+import 'package:angular/angular.dart';
 import 'package:http/http.dart';
 
 import 'hero.dart';
 ```
 
-刷新浏览器后，英雄数据就会从模拟服务器被成功读取。
+刷新浏览器。英雄数据应该从模拟服务器中成功加载。
 
 #### HTTP Future
 
-我们将仍然返回一个 Future ，但是用不同的方法来创建它。
+为获取到英雄列表，首先异步调用`http.get()`。然后使用`_extractData`助手方法来解码响应的正文。
 
-为获取到英雄列表，我们首先异步调用 `http.get()` 。然后使用 `_extractData` 助手方法来解码响应的正文。
+响应的 JSON 有一个单一的`data`属性，保存了调用者想要的英雄列表。所以提取这个列表，并将它作为解析后的 Future 值返回。
 
-响应的 JSON 只有一个单一的 `data` 属性，保存了调用者真正期望的英雄列表。所以我们夺取那个列表，并将它作为解析的 Future 值来返回。
+> 注意这个由服务器返回的数据的形态。这个特殊的内存 Web API 的实例返回一个带有`data`属性的对象。你的 API 可能返回其它东西。调整代码以匹配你的 Web API。
 
-> 仔细看看这个由服务器返回的数据的形态。这个内存 Web API 的范例中所做的是返回一个带有`data`属性的对象。你的 API 也可以返回其它东西。请调整这些代码以匹配你的 Web API。
-
-调用者并不知道这些小花招。就像之前一样，它接收一个英雄列表的 Future 。它并不知道我们是从（模拟）服务器获取英雄数据。也不必了解把 HTTP 响应转换成英雄数据时所作的这些复杂变换。看到美妙之处了吧，这正是将数据访问委托组一个服务的目的，就像 `HeroService`。
+调用者并不知道从（模拟）服务器获取英雄。和以前一样它接收一个*英雄*的 Future。
 
 #### 错误处理
 
-在`getHeroes()`的最后，我们`catch`了服务器的失败信息，并把它们传给了错误处理器：
+在`getHeroes()`的最后，你`catch`了服务器的失败信息，并把它们传给了错误处理器：
 
 ```
 } catch (e) {
@@ -266,7 +284,7 @@ import 'hero.dart';
 }
 ```
 
-这是一个关键的步骤！我们必须预料到 HTTP 请求会失败，因为有太多我们无法控制的原因可能导致它们频繁出现各种错误。
+这是一个关键的步骤！你必须预料到 HTTP 请求会失败，因为有太多超出控制的原因可能导致它们频繁发生。
 
 ```
 Exception _handleError(dynamic e) {
@@ -275,19 +293,19 @@ Exception _handleError(dynamic e) {
 }
 ```
 
-在这个范例服务中，我们把错误记录到控制台中；在真实世界中，我们应该做得更好。
+这个示例服务把错误记录到控制台中；在真实世界中，你应该在代码中处理错误。作为一个展示，它能工作就够了。
 
-我们决定通过传播异常，将错误信息用一个用户友好的格式返回给调用者，以便调用者能把一个合适的错误信息显示给用户。
+这个代码还包含一个通过传播异常给调用者的错误，以便调用者可以给用户显示恰当的错误信息。
 
 #### 通过 id 获取英雄
 
-`HeroDetailComponent`请求`HeroService`获取一个单一的英雄来编辑。
+当`HeroDetailComponent`请求`HeroService`来获取一个英雄时，`HeroService`当前获取所有英雄并通过匹配`id`来过滤这一个。对于一个模拟环境是很好的，但当你只想要一个时，却向真实的服务器请求所有的英雄是浪费的。多数的 web APIs 支持这样的格式`api/hero/:id`（例如`api/hero/11`）的 *get-by-id* 请求。
 
-`HeroService`获取所有的英雄，然后通过匹配的`id`过滤找到期望的英雄。在一个模拟的情形下是好的。但当我们只想要一个却向真实服务器请求所有的英雄是浪费的。多数的web APIs 支持这样的格式`api/hero/:id`，通过 id 获取请求。
-
-更新`HeroService.getHero`方法，使用通过id获取请求，应用我们刚学到的来写`getHeroes`:
+使用 *get-by-id* 请求更新`HeroService.getHero()`方法：
 
 ```
+// lib/src/hero_service.dart (getHero)
+
 Future<Hero> getHero(int id) async {
   try {
     final response = await _http.get('$_heroesUrl/$id');
@@ -298,45 +316,50 @@ Future<Hero> getHero(int id) async {
 }
 ```
 
-这几乎和`getHeroes`一样。URL 通过编码英雄 id 到 URL 来匹配`api/hero/:id`这种模式告诉服务器应该更新哪个英雄。
+这个请求和`getHeroes()`几乎一样。在 URL中的英雄 id 标识服务器应该更新哪个英雄。
 
-我们也应该适应响应的`data`是一个单一的英雄对象而不是一个列表。
+另外，响应中的`data`是一个单一的英雄对象而不是一个列表。
 
-#### getHeroes API 没变
+#### 未改变的 *getHeroes* API
 
-虽然我们对 `getHeroes()`和`getHeroes()` 做了一些重要的 *内部*修改，但该方法公开的函数签名并没有任何变化。从这两个方法我们返回的仍然是一个 Future，不用被迫更新任何一个调用了它们的组件。
+尽管你对`getHeroes()`和`getHero()`做了一些重要的内部修改，但公共签名并没有改变。从这两个方法仍然返回一个 Future。你不需要更新任何调用了它们的组件。
 
-到目前为止，我们的客户很欣赏这种富有弹性的 API 集成方式。 现在它们想增加创建和删除英雄的功能。
-
-让我们来看看当我们试图更新英雄的详情时会发生什么。
+现在是时候添加创建和删除英雄的功能了。
 
 ### 更新英雄详情
 
-我们已经可以在英雄详情中编辑英雄的名字了。来试试吧。在输入的时候，页头上的英雄名字也会随之更新。不过当我们点了Back（后退）按钮时，这些修改就丢失了。
+尝试在英雄详情视图编辑一个英雄的名字了。随着你的输入，英雄名字也会随之在视图的标题更新。但如果你点击了 Back（后退）按钮，这些修改就丢失了。
 
-以前是不会丢失更新的，现在是怎么回事？当该应用使用模拟出来的英雄列表时，更新直接被应用到了单一的、应用级共享的英雄列表中的英雄对象。而现在改成了从服务器获取数据。如果我们希望这些更改被持久化，我们就得把它们写回服务器。
+之前更新是不会丢失的。有什么被改变了？当应用使用模拟英雄列表时，更新直接被应用到了单一的、全应用范围共享的列表中的英雄对象。现在你从一个服务器获取数据，如果你想要保存这些更改，你必须把它们写回到服务器。
 
-#### 保存英雄详情
+#### 添加保存英雄详情的功能
 
-我们先来确保对英雄名字的编辑不会丢失。先在英雄详情模板的底部添加一个保存按钮，它绑定了一个`click`事件，事件绑定会调用组件中一个名叫`save`的新方法：
+在英雄详情模板的结尾添加一个带`click`事件绑定的保存按钮，事件绑定会调用组件中一个名为`save()`的新方法。
 
 ```
+// lib/src/hero_detail_component.html (save)
+
 <button (click)="save()">Save</button>
 ```
 
-`save`方法使用 `hero` 服务的`update`方法来保存对英雄名字的修改，然后导航回前一个视图：
+添加下面的`save()`方法，它使用英雄服务的`update()`方法来保存英雄名的改变，然后导航回前一个视图。
 
 ```
+// lib/src/hero_detail_component.dart (save)
+
 Future<Null> save() async {
   await _heroService.update(hero);
   goBack();
 }
 ```
 
-#### hero 服务的 update 方法
-`update`方法的大致结构与`getHeroes`类似，不过我们使用 HTTP 的 *put* 方法来把修改保存到服务端：
+#### 给英雄服务添加 *update()* 方法
+
+`update()`方法的总体结构和`getHeroes()`很相似，但它使用 HTTP`put()`来把修改保存到服务器端。
 
 ```
+// lib/src/hero_service.dart (update)
+
 static final _headers = {'Content-Type': 'application/json'};
 
 Future<Hero> update(Hero hero) async {
@@ -351,17 +374,19 @@ Future<Hero> update(Hero hero) async {
 }
 ```
 
-我们通过一个编码在 URL 中的英雄 id 来告诉服务器应该更新哪个英雄。put 的 body 是该英雄的 JSON 字符串编码，它是通过调用`SON.encode`得到的。并且在请求头中标记出的 body 的内容类型（`application/json`）。
+为了确定服务器应该更新哪个英雄，英雄`id`被编码进 URL 中。`putt()`body 参数是通过调用`JSON.encode`获得的英雄的 JSON 字符串编码。body 的内容类型（`application/json`）被标记在请求头中。
 
-刷新浏览器试一下，对英雄名字的修改现在应该能保存了。
+刷新浏览器，改变一个英雄的名字，保存你的修改，并点击浏览器的后退按钮。修改现在应该保存了。
 
-### 添加英雄
+### 增加添加英雄的功能
 
-要添加一个新的英雄，我们得先知道英雄的名字。我们使用一个 `input` 元素配合一个添加按钮来实现。
+要添加一个英雄，应用需要这个英雄的名字。你可以使用一个`input`元素搭配一个添加按钮。
 
-把下列代码插入 heroes 组件的 HTML 中，放在标题的下面：
+在 heroes 组件的 HTML 中，紧跟标题的后面，插入如下内容：
 
 ```
+// lib/src/heroes_component.html (add)
+
 <div>
   <label>Hero name:</label> <input #heroName />
   <button (click)="add(heroName.value); heroName.value=''">
@@ -370,9 +395,11 @@ Future<Hero> update(Hero hero) async {
 </div>
 ```
 
-当点击事件触发时，我们调用组件的点击处理器，然后清空这个输入框，以便用来输入另一个名字。
+响应一个点击事件，调用组件的点击处理器，然后清空这个输入框，以便准备好输入另一个名字。
 
 ```
+// lib/src/heroes_component.dart (add)
+
 Future<Null> add(String name) async {
   name = name.trim();
   if (name.isEmpty) return;
@@ -381,11 +408,13 @@ Future<Null> add(String name) async {
 }
 ```
 
-当指定的名字不为空的时候，点击处理器就会委托 hero 服务来创建一个具有此名字的英雄，并把这个新的英雄添加到我们的列表中。
+当给定的名字不为空时，处理器委托英雄服务来创建这个命名英雄，然后把这个新英雄添加到列表中。
 
-最后，我们在`HeroService`类中实现这个`create`方法。
+在`HeroService`类中实现这个`create()`方法。
 
 ```
+// lib/src/hero_service.dart (create)
+
 Future<Hero> create(String name) async {
   try {
     final response = await _http.post(_heroesUrl,
@@ -397,36 +426,40 @@ Future<Hero> create(String name) async {
 }
 ```
 
-刷新浏览器，并创建一些新的英雄！
+刷新浏览器，并创建一些英雄。
 
-### 删除一个英雄
+### 增加删除英雄的功能
 
-英雄太多了？ 我们在英雄列表视图中来为每个英雄添加一个删除按钮吧。
+在英雄视图中的每个英雄都应该有一个删除按钮。
 
-把这个按钮元素添加到英雄列表组件的 HTML 中，把它放在`<li>`标签中的英雄名的后面：
+把下面的按钮元素添加到 heroes 组件的 HTML 中，把它放在重复的`<li>`元素里英雄名的后面。
 
 ```
 <button class="delete"
   (click)="delete(hero); $event.stopPropagation()">x</button>
 ```
 
-`<li>`元素应该变成了这样：
+`<li>`元素应该看起来像这样：
 
 ```
-  <li *ngFor="let hero of heroes" (click)="onSelect(hero)"
-      [class.selected]="hero == selectedHero">
-    <span class="badge">{ {hero.id} }</span>
-    <span>{ {hero.name} }</span>
-    <button class="delete"
-      (click)="delete(hero); $event.stopPropagation()">x</button>
-  </li>
+// lib/src/heroes_component.html (li element)
+
+ <li *ngFor="let hero of heroes" (click)="onSelect(hero)"
+    [class.selected]="hero === selectedHero">
+  <span class="badge">{{hero.id}}</span>
+  <span>{{hero.name}}</span>
+  <button class="delete"
+    (click)="delete(hero); $event.stopPropagation()">x</button>
+</li>
 ```
 
-除了调用组件的`delete`方法之外，这个`delete`按钮的点击处理器还应该阻止点击事件向上冒泡——我们并不希望触发`<li>`的点击事件处理器，否则它会选中我们要删除的这位英雄。
+除了调用组件的`delete()`方法，这个删除按钮的点击处理器代码阻止点击事件冒泡——你并不希望`<li>`的点击事件处理器被触发，因为这样做想要选择英雄时用户会删除这个英雄。
 
-`delete`处理器的逻辑略复杂：
+`delete()`处理器的逻辑有点棘手：
 
 ```
+// lib/src/heroes_component.dart (delete)
+
 Future<Null> delete(Hero hero) async {
   await _heroService.delete(hero.id);
   heroes.remove(hero);
@@ -434,11 +467,14 @@ Future<Null> delete(Hero hero) async {
 }
 ```
 
-当然，我们仍然把删除英雄的操作委托给了 hero 服务，不过该组件仍然负责更新显示：它从列表中移除了被删除的英雄，如果删除的是正选中的英雄，还会清空选择。
+你当然委托给英雄服务来删除英雄，但该组件仍然负责更新显示：如果有必要，它从列表中移除 已删除的英雄，并重置所选英雄。
 
-我们希望删除按钮被放在英雄条目的最右边。于是 CSS 变成了这样：
+添加如下 CSS 把删除按钮放在英雄条目的最右边：
 
 ```
+// 
+lib/src/heroes_component.css (additions)
+
 button.delete {
   float:right;
   margin-top: 2px;
@@ -448,11 +484,13 @@ button.delete {
 }
 ```
 
-#### hero 服务的delete方法
+#### 英雄服务的 *delete()* 方法
 
-hero 服务的`delete`方法使用 HTTP 的 delete 方法来从服务器上移除该英雄：
+添加英雄服务的`delete()`方法，使用 HTTP 的`delete()`方法从服务器上移除英雄：
 
 ```
+// lib/src/hero_service.dart (delete)
+
 Future<Null> delete(int id) async {
   try {
     final url = '$_heroesUrl/$id';
@@ -463,25 +501,27 @@ Future<Null> delete(int id) async {
 }
 ```
 
-刷新浏览器，并试一下这个新的删除功能。
+刷新浏览器，并试试这个新的删除功能。
 
 ### 数据流
 
-回顾一下之前的内容，`HeroService.getHeroes()` 等待 `http.get()` 响应，并生成一个包含 `List<Hero>` 的 Future。当我们只对一个单一的结果感兴趣时，这很不错。
+回想一下，`HeroService.getHeroes()`等待一个`http.get()`响应，并生成一个`List<Hero>` 的 *Future*。当你只对一个单一的结果感兴趣时，这很不错。
 
-但是请求并非总是"一步到位"（one and done）的。我们可能开始一个请求，然后取消，并在服务器对第一个请求作出响应前，开始另一个请求。像这样一个*请求-取消-新请求*的序列，很难通过*Future*实现。但接下来我们会看到，它对于*Stream*却很简单。
+但是请求并不总是只发起一次。你可能开始发起一个请求，然后取消，并在服务器对第一个请求作出响应前发起一个不同的请求。一个*请求-取消-新请求*的序列难以通过*Futures* 实现，但使用 *Streams* 却很容易。
 
-#### 按名搜索
+#### 增加按名搜索的功能
 
-我们将为《英雄之旅》添加一个*英雄搜索*功能。当用户在搜索框中输入一个名字时，我们将不断发起 HTTP 请求，以获得按名字过滤的英雄。
+你将为英雄指南添加一个*英雄搜索* 的特性。当用户在搜索框中输入名字时，你会重复发起根据名字过滤英雄的 HTTP 请求。 
 
-我们先创建`HeroSearchService`服务，它会把搜索查询发送到我们服务器的 Web API。
+先创建`HeroSearchService`服务，它会把搜索查询发送到服务器的 Web API。
 
 ```
+// lib/src/hero_search_service.dart
+
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:angular2/core.dart';
+import 'package:angular/angular.dart';
 import 'package:http/http.dart';
 
 import 'hero.dart';
@@ -511,30 +551,36 @@ class HeroSearchService {
   }
 }
 ```
-`HeroSearchService`中的`_http.get()`调用和 `HeroService` 中的类似，只是这次 URL 带了查询字符串。
+`HeroSearchService`中的`_http.get()`调用和`HeroService`中的那一个类似，尽管现在这个 URL 带了查询字符串。
 
-#### 英雄搜索组件
+#### HeroSearchComponent
 
-我们再创建一个新的 `HeroSearchComponent` 来调用这个新的 `HeroSearchService` 。
+创建一个`HeroSearchComponent`，它调用这个新的`HeroSearchService`。
 
 组件模板很简单，就是一个输入框和一个相匹配的搜索结果列表。
 
 ```
+// lib/src/hero_search_component.html
+
 <div id="search-component">
   <h4>Hero Search</h4>
-  <input #searchBox id="search-box" (keyup)="search(searchBox.value)" />
+  <input #searchBox id="search-box"
+         (change)="search(searchBox.value)"
+         (keyup)="search(searchBox.value)" />
   <div>
     <div *ngFor="let hero of heroes | async"
          (click)="gotoDetail(hero)" class="search-result" >
-      { {hero.name} }
+      {{hero.name}}
     </div>
   </div>
 </div>
 ```
 
-我们还要往这个新组件中添加样式。
+同时，给这个新组件添加样式。
 
 ```
+// lib/src/hero_search_component.css
+
 .search-result {
   border-bottom: 1px solid gray;
   border-left: 1px solid gray;
@@ -551,54 +597,51 @@ class HeroSearchService {
 }
 ```
 
-当用户在搜索框中输入时，一个 `keyup` 事件绑定会调用该组件的`search`方法，并传入新的搜索框的值。
+当用户在搜索框中输入时，一个 *keyup* 事件绑定调用该组件的`search()`方法，并传入新的搜索框的值。如果用户使用鼠标粘贴文本，*change* 事件绑定会被触发。
 
-`*ngFor`从该组件的`heroes`属性重复获取 hero 对象。这也没啥特别的。
+不出所料，`*ngFor`从该组件的`heroes`属性重复 hero 对象。
 
-但是接下来我们看到，现在 `heroes` 属性是一个英雄列表的 Stream 对象，而不再只是英雄列表。 `*ngFor` 不能用 `Stream` 对象做任何事，除非我们在它后面跟一个 `async` 管道(`AsyncPipe`) 。这个 `async` 管道会订阅 `Stream` 对象，并为 `*ngFor` 生成一个英雄列表。
+但你很快就会看到，现在`heroes`属性是一个英雄列表的 *Stream*，而不再只是一个英雄列表。`*ngFor` 不能使用`Stream`做任何事，除非你通过`async`管道(`AsyncPipe`)联通它。`async`管道订阅`Stream`，并为`*ngFor`生成一个英雄列表。
 
-是时候创建 `HeroSearchComponent` 类及其元数据了。
+创建`HeroSearchComponent`类及其元数据。
 
 ```
+// lib/src/hero_search_component.dart
+
 import 'dart:async';
-
-import 'package:angular2/core.dart';
-import 'package:angular2/router.dart';
-import 'package:stream_transformers/stream_transformers.dart';
-
+import 'package:angular/angular.dart';
+import 'package:angular_router/angular_router.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'hero_search_service.dart';
 import 'hero.dart';
-
 @Component(
-    selector: 'hero-search',
-    templateUrl: 'hero_search_component.html',
-    styleUrls: const ['hero_search_component.css'],
-    providers: const [HeroSearchService])
+  selector: 'hero-search',
+  templateUrl: 'hero_search_component.html',
+  styleUrls: const ['hero_search_component.css'],
+  directives: const [CORE_DIRECTIVES],
+  providers: const [HeroSearchService],
+  pipes: const [COMMON_PIPES],
+)
 class HeroSearchComponent implements OnInit {
   HeroSearchService _heroSearchService;
   Router _router;
-
   Stream<List<Hero>> heroes;
   StreamController<String> _searchTerms =
       new StreamController<String>.broadcast();
-
   HeroSearchComponent(this._heroSearchService, this._router) {}
-
   // Push a search term into the stream.
   void search(String term) => _searchTerms.add(term);
-
   Future<Null> ngOnInit() async {
     heroes = _searchTerms.stream
-        .transform(new Debounce(new Duration(milliseconds: 300)))
+        .transform(debounce(new Duration(milliseconds: 300)))
         .distinct()
-        .transform(new FlatMapLatest((term) => term.isEmpty
+        .transform(switchMap((term) => term.isEmpty
             ? new Stream<List<Hero>>.fromIterable([<Hero>[]])
             : _heroSearchService.search(term).asStream()))
         .handleError((e) {
       print(e); // for demo purposes only
     });
   }
-
   void gotoDetail(Hero hero) {
     var link = [
       'HeroDetail',
@@ -609,9 +652,9 @@ class HeroSearchComponent implements OnInit {
 }
 ```
 
-#### 搜索词
+##### 搜索条目
 
-仔细看下这个`_searchTerms`：
+聚焦`_searchTerms`：
 
 ```
 StreamController<String> _searchTerms =
@@ -621,22 +664,22 @@ StreamController<String> _searchTerms =
 void search(String term) => _searchTerms.add(term);
 ```
 
-`StreamController`，顾名思义，是用于 Stream 的控制器，它允许我们处理基础数据流，例如添加数据。
+ [StreamController](https://api.dartlang.org/stable/dart-async/StreamController-class.html)，顾名思义，是一个 [Stream](https://api.dartlang.org/stable/dart-async/Stream-class.html) 的控制器，比如它允许你通过给它添加数据来操作潜在的数据流。
 
-在我们的例子中，字符串的基础数据流（`_searchTerms.stream`），表示与用户输入的搜索词匹配的英雄名称。每次调用 `search` ，都会通过控制器的 `add` 方法，将新的字符串放进数据流。
+在这个例子中，字符串的潜在的数据流（`_searchTerms.stream`），表示与用户输入的搜索词匹配的英雄名。每次调用`search()`，都会通过调用控制器的`add()`，把新的字符串放进数据流。
 
-#### 初始化 heroes 属性（ngOnInit）
+##### 初始化 *heroes* 属性（*ngOnInit*）
 
-我们打算把搜索词的数据流转换成 `hero` 列表的数据流，并把结果赋值给 `heroes` 属性。
+你可以把搜索条目的数据流转换成`Hero`列表的数据流，并把结果赋值给`heroes`属性。
 
 ```
 Stream<List<Hero>> heroes;
 
 Future<Null> ngOnInit() async {
   heroes = _searchTerms.stream
-      .transform(new Debounce(new Duration(milliseconds: 300)))
+      .transform(debounce(new Duration(milliseconds: 300)))
       .distinct()
-      .transform(new FlatMapLatest((term) => term.isEmpty
+      .transform(switchMap((term) => term.isEmpty
           ? new Stream<List<Hero>>.fromIterable([<Hero>[]])
           : _heroSearchService.search(term).asStream()))
       .handleError((e) {
@@ -645,72 +688,74 @@ Future<Null> ngOnInit() async {
 }
 ```
 
-如果我们把每一次用户按键都直接传给`HeroSearchService`，就会发起一场 HTTP 请求风暴。这可不好玩。我们不希望占用服务器资源，也不打算耗尽网络带宽。
+每次用户按键都立刻传给`HeroSearchService`，就会创建海量的 HTTP 请求，浪费服务器资源并消耗大量网络流量。
 
-幸运的是，数据流转换器可以帮助我们归并这些请求。我们将对 `HeroSearchService` 发起更少的调用，并且仍然及时地获得响应。做法如下：
+相反，你可以使用链式调用`Stream`操作符，减少流向字符串`Stream`的请求。你将发起较少的`HeroSearchService`调用，并且仍然及时地获得结果。做法如下：
 
-* 在传出最终字符串之前，`transform(new Debounce(... 300)))` 会一直等待，直到搜索词暂停输入300毫秒。我们实际发起请求的间隔永远不会小于300ms。
-* `distinct()` 会确保在搜索词发生变化时，我们仅发送一次请求。这样就不会重复请求同一个搜索词了。
-* `transform(new FlatMapLatest(...))` 应用了一个类似映射的转换器，它会为每个已经通过去抖动（debounce）和去重复（distinct）的搜索词调用搜索服务。并且，它会丢弃之前的搜索结果，仅返回最近的搜索服务结果。
-* `handleError()`处理错误。这个简单的例子中只是把错误信息打印到控制台;实际的应用应该做得更好。
+* `transform(debounce(... 300)))`：在传递最终的字符串之前，会一直等待，直到搜索条目暂停输入300毫秒。你发起请求的频率永远不会超过300ms。
+* `distinct()`：确保只在过滤文本变化时才发送请求。
+* `transform(switchMap(...))`：为每个已经通过`debounce()`和`distinct()`的搜索条目调用搜索服务。它取消并丢弃之前的搜索，仅返回最新的搜索服务流元素。
+* `handleError()`：处理错误。这个简单的例子只是把错误信息打印到控制台;实际的应用应该做得更好。
 
 #### 为仪表盘添加搜索组件
 
-我们将英雄搜索的 HTML 元素添加到`DashboardComponent`模版的底部。
+把英雄搜索的 HTML 元素添加到`DashboardComponent`模版的底部。
 
 ```
+// 
+lib/src/dashboard_component.html
+
 <h3>Top Heroes</h3>
 <div class="grid grid-pad">
   <a *ngFor="let hero of heroes"  [routerLink]="['HeroDetail', {id: hero.id.toString()}]"  class="col-1-4">
     <div class="module hero">
-      <h4>{ {hero.name} }</h4>
+      <h4>{{hero.name}}</h4>
     </div>
   </a>
 </div>
 <hero-search></hero-search>
 ```
 
-最后，从 `hero_search_component.dart` 中导入 `HeroSearchComponent` ，并将其添加到 `directives` 列表中。
+最后，从`hero_search_component.dart`中导入`HeroSearchComponent`，并把它添加到`directives`列表中。
 
 ```
+// lib/src/dashboard_component.dart (search)
+
 import 'hero_search_component.dart';
 
 @Component(
-    selector: 'my-dashboard',
-    templateUrl: 'dashboard_component.html',
-    styleUrls: const ['dashboard_component.css'],
-    directives: const [HeroSearchComponent, ROUTER_DIRECTIVES])
+  selector: 'my-dashboard',
+  templateUrl: 'dashboard_component.html',
+  styleUrls: const ['dashboard_component.css'],
+  directives: const [CORE_DIRECTIVES, HeroSearchComponent, ROUTER_DIRECTIVES],
+)
 ```
 
-再次运行该应用，跳转到仪表盘，并在英雄下方的搜索框里输入一些文本。看起来就像这样：
+再次运行应用。在仪表盘中的搜索框中输入一些文字。如果你输入的字符匹配到了任何现有英雄名，你将会看到如下效果：
 
-![](https://webdev.dartlang.org/resources/images/devguide/toh/toh-hero-search.png)
+![](http://upload-images.jianshu.io/upload_images/892968-ca26fa5da70e70b0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 
 ### 应用的结构与代码
 
-回顾一下本章在线例子中的范例代码。验证我们是否得到了如下结构：
+回顾本章示例的源代码 [在线示例](https://webdev.dartlang.org/examples/toh-6/) ([查看源码](https://github.com/angular-examples/toh-6/tree/4.x))。验证你是否有如下结构：
 
 ```
 angular_tour_of_heroes/
 |___lib/
-|    |___app_component.css
-|    |___app_component.dart
-|    |___dashboard_component.css
-|    |___dashboard_component.dart
-|    |___dashboard_component.html
-|    |___hero.dart
-|    |___hero_detail_component.css
-|    |___hero_detail_component.dart
-|    |___hero_detail_component.html
-|    |___hero_search_component.css (new)
-|    |___hero_search_component.dart (new)
-|    |___hero_search_component.html (new)
-|    |___hero_search_service.dart (new)
-|    |___hero_service.dart
-|    |___heroes_component.css
-|    |___heroes_component.dart
-|    |___heroes_component.html
+|    |___app_component.{css,dart}
 |    |___in_memory_data_service.dart (new)
+|    |___src/
+|    |     |___dashboard_component.{css,dart,html}
+|    |     |___hero.dart
+|    |     |___hero_detail_component.{css,dart,html}
+|    |     |___hero_search_component.{css,dart,html} (new)
+|    |     |___hero_search_service.dart (new)
+|    |     |___hero_service.dart
+|    |     |___heroes_component.{css,dart,html}
+|___test/
+|    |___app_test.dart
+|    |___...
 |___web/
 |    |___main.dart
 |    |___index.html
@@ -720,11 +765,15 @@ angular_tour_of_heroes/
 
 ### 最后冲刺
 
-旅程即将结束，不过我们已经收获颇丰。
+旅程即将结束，不过你已经收获颇丰。
 
-* 我们在应用程序中添加了使用 HTTP 时必要的依赖
-* 我们重构了 `HeroService` ，以通过 Web API 来加载英雄数据
-* 我们扩展了 `HeroService`，以支持 Post 、 Put 和 Delete 方法
-* 我们更新了组件，以允许用户添加、编辑和删除英雄
-* 我们配置了一个内存（in-memory） Web API
-* 我们学会了如何使用数据流
+* 添加了在应用中使用 HTTP 时必要的依赖。
+* 重构了`HeroService`，从一个 Web API 来加载英雄。
+* 扩展了`HeroService`，以支持`post()`、`put()`和`delete()`方法。
+* 更新了组件，以允许英雄的添加、编辑和删除。
+* 配置了一个内存 Web API。
+* 学会了如何使用 Streams。
+
+### 下一步
+
+回到[学习路径](../指南/学习Angular.md)，在哪里你可以阅读更多关于在本教程中的概念和练习。
